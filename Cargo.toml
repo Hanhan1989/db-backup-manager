@@ -1,0 +1,6 @@
+[package]
+name = "exportacion_base_de_datos"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
