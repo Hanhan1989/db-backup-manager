@@ -4,7 +4,7 @@ use std::path::Path;
 use std::env;
 
 fn main() {
-    let backup_dir = "/var/backups/mysql/";
+    let backup_dir = "/var/backups/mysql";
     let mysql_user = "root";
     
     // Obtener el puerto desde los argumentos
