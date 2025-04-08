@@ -19,6 +19,18 @@ fn main() {
         }
     }
 
+    // Leer parámetro opcional --limit N
+    let mut limit: Option<usize> = None;
+    if let Some(index) = args.iter().position(|x| x == "--limit") {
+        if let Some(limit_value) = args.get(index + 1) {
+            if let Ok(n) = limit_value.parse::<usize>() {
+                limit = Some(n);
+            } else {
+                eprintln!("Valor de --limit no válido, debe ser un número");
+            }
+        }
+    }
+
     // Crear directorio destino si no existe
     if !PathBuf::from(backup_dir).exists() {
         fs::create_dir_all(backup_dir).expect("No se pudo crear el directorio de backup");
@@ -89,4 +101,40 @@ fn main() {
     } else {
         eprintln!("Fallo al crear el archivo comprimido");
     }
+
+    // Solo limitar backups si se pasó --limit
+    if let Some(max_keep) = limit {
+        let mut backups: Vec<_> = fs::read_dir(backup_dir)
+            .expect("No se pudo leer el directorio de backups")
+            .filter_map(|entry| {
+                let entry = entry.ok()?;
+                let path = entry.path();
+                if path.is_file() && path.extension().map(|ext| ext == "gz").unwrap_or(false) {
+                    Some(path)
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        // Ordenar por fecha de modificación (más recientes primero)
+        backups.sort_by_key(|path| {
+            fs::metadata(path)
+                .and_then(|meta| meta.modified())
+                .unwrap_or(std::time::SystemTime::UNIX_EPOCH)
+        });
+        backups.reverse(); // Más recientes primero
+
+        if backups.len() > max_keep {
+            for old_backup in &backups[max_keep..] {
+                if let Err(e) = fs::remove_file(old_backup) {
+                    eprintln!("Error eliminando backup antiguo {:?}: {}", old_backup, e);
+                } else {
+                    println!("Backup antiguo eliminado: {:?}", old_backup);
+                }
+            }
+        }
+    }
+
+
 }
