@@ -14,7 +14,12 @@ A simple tool to back up all MySQL databases.
 - The generated file is named with the **date and time of the backup**.
 - Backups are stored in the folder: `/var/backups/mysql`.
 
----
+
+## Optional parameters
+
+- `--port`: allows you to specify the MySQL server port. If not provided, the default port **3306** will be used.
+- `--limit`: defines how many backups to keep. If not set, **no old backups will be deleted**. For example, `--limit 30` will keep the **30 most recent backups** and delete the older ones.
+
 
 ## Usage
 
